@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { FiMenu, FiX, FiUpload, FiArrowRight } from 'react-icons/fi'
+import { FiMenu, FiX, FiUpload, FiArrowRight, FiMessageSquare } from 'react-icons/fi'
 import { RiChatSmileLine } from 'react-icons/ri'
 import { BsFileEarmarkText } from 'react-icons/bs'
 import { usePathname } from 'next/navigation'
@@ -19,7 +19,7 @@ export default function Navbar() {
     { name: "About", href: "/about", icon: <RiChatSmileLine className="text-lg" /> },
     { name: "Services", href: "/services", icon: <RiChatSmileLine className="text-lg" /> },
     { name: "Contract Generator", href: "/contract-generator", icon: <BsFileEarmarkText className="text-lg" /> },
-    { name: "Upload", href: "/upload", icon: <FiUpload className="text-lg" /> },
+    { name: "Chat", href: "/upload", icon: <FiMessageSquare className="text-lg" /> },
   ]
 
   // Handle scroll effects

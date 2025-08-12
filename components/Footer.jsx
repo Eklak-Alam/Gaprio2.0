@@ -67,7 +67,7 @@ export default function Footer() {
                 className="relative w-10 h-10 rounded-lg overflow-hidden"
               >
                 <Image 
-                  src="/logo.jpg" // Replace with your logo path
+                  src="/logo.png" // Replace with your logo path
                   alt="Gaprio Logo"
                   width={40}
                   height={40}
