@@ -44,7 +44,7 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="relative bg-gray-950 border-t border-gray-800/50 overflow-hidden">
+    <footer className="relative bg-gray-900 border-t border-gray-800/50 overflow-hidden">
       {/* Floating background elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-600/10 rounded-full filter blur-3xl"></div>
