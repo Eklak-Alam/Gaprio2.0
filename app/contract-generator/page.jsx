@@ -2,8 +2,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
-import { FiCheck, FiChevronRight, FiDownload, FiEdit, FiLoader, FiMic, FiSend, FiUpload, FiX } from 'react-icons/fi'
+import { FiCheck, FiChevronRight, FiDownload, FiEdit, FiFileText, FiLoader, FiMic, FiSend, FiUpload, FiX } from 'react-icons/fi'
 import { FileText } from 'lucide-react'
+import ContractGeneratorHero from '@/components/ContractGenerator/ContractGeneratorHero'
 
 export default function ContractGenerator() {
   const [step, setStep] = useState(1)
@@ -296,7 +297,44 @@ export default function ContractGenerator() {
   }, [isRecording, audioBlob, file])
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white pt-20 md:pt-36 px-4">
+    <div className="min-h-screen bg-gray-900 text-white pt-44 md:pt-44 px-4">
+
+      <ContractGeneratorHero />
+
+
+      <div className="text-center mb-12 pt-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center px-4 py-2 rounded-full bg-blue-900/30 border border-blue-500/30 mb-6"
+          >
+            <FiFileText className="text-blue-400 mr-2" />
+            <span className="text-sm font-medium text-blue-200">AI Contract Generator</span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight"
+          >
+            <span className="block text-white">Upload Source</span>
+            <span className="bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent">
+              Start Your Contract
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-md text-gray-300 max-w-2xl mx-auto"
+          >
+            Provide the basis for your contract by uploading a document or recording voice instructions.
+          </motion.p>
+        </div>
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {/* Progress Steps */}

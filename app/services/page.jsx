@@ -69,7 +69,7 @@ export default function ServicesPage() {
   ]
 
   return (
-    <div className="relative bg-gray-900 text-white overflow-hidden">
+    <div className="relative bg-gray-900 text-white overflow-hidden pt-10">
       {/* Background blobs */}
       <div className="absolute inset-0 opacity-20 -z-10">
         <div className="absolute top-0 left-0 w-56 h-56 sm:w-72 sm:h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
