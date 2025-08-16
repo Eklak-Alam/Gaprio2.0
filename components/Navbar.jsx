@@ -19,7 +19,7 @@ export default function Navbar() {
     { name: "About", href: "/about", icon: <RiChatSmileLine className="text-lg" /> },
     { name: "Services", href: "/services", icon: <RiChatSmileLine className="text-lg" /> },
     { name: "Contract Generator", href: "/contract-generator", icon: <BsFileEarmarkText className="text-lg" /> },
-    { name: "Chat", href: "/upload", icon: <FiMessageSquare className="text-lg" /> },
+    { name: "Chat", href: "/chat", icon: <FiMessageSquare className="text-lg" /> },
   ]
 
   // Handle scroll effects
