@@ -2,7 +2,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
-import { FiCheck, FiChevronRight, FiDownload, FiEdit, FiFileText, FiLoader, FiMic, FiSend, FiUpload, FiX } from 'react-icons/fi'
+import { FiCheck, FiChevronRight, FiDownload, FiEdit, FiFileText, FiLoader, FiMic, FiSend, FiUpload, FiX, FiPlus, FiChevronDown } from 'react-icons/fi'
 import { FileText } from 'lucide-react'
 import ContractGeneratorHero from '@/components/ContractGenerator/ContractGeneratorHero'
 
@@ -16,6 +16,7 @@ export default function ContractGenerator() {
   const [error, setError] = useState(null)
   const [progress, setProgress] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [visibleClauses, setVisibleClauses] = useState(3) // Number of clauses initially visible
   const mediaRecorderRef = useRef(null)
   const chunksRef = useRef([])
   const audioRef = useRef(null)
@@ -77,7 +78,7 @@ export default function ContractGenerator() {
             ref={audioRef}
             src={URL.createObjectURL(audioBlob)}
             controls
-            className="w-full mb-4"
+            className="w-full mb-4 rounded-lg"
           />
         )
       }
@@ -89,7 +90,7 @@ export default function ContractGenerator() {
             ref={audioRef}
             src={URL.createObjectURL(file)}
             controls
-            className="w-full mb-4"
+            className="w-full mb-4 rounded-lg"
           />
         )
       }
@@ -98,7 +99,7 @@ export default function ContractGenerator() {
         return (
           <video
             controls
-            className="w-full mb-4 max-h-40"
+            className="w-full mb-4 max-h-40 rounded-lg"
           >
             <source src={URL.createObjectURL(file)} type={file.type} />
             Your browser does not support the video tag.
@@ -195,11 +196,30 @@ export default function ContractGenerator() {
         const parties = contractParts[1]?.split(' and ') || ["Party A", "Party B"]
         const effectiveDate = new Date().toLocaleDateString()
         
+        // Parse clauses with better formatting
         const clauses = contractParts.slice(2).map((clause, index) => {
-          const [title, ...content] = clause.split(':')
+          // Split at the first colon if it exists
+          const colonIndex = clause.indexOf(':')
+          let title, content
+          
+          if (colonIndex !== -1) {
+            title = clause.substring(0, colonIndex).trim()
+            content = clause.substring(colonIndex + 1).trim()
+          } else {
+            // If no colon, check for numbering patterns
+            const numberMatch = clause.match(/^(\d+\.\d+|\d+\.|[A-Z]\.)\s*/)
+            if (numberMatch) {
+              title = numberMatch[0].trim()
+              content = clause.substring(numberMatch[0].length).trim()
+            } else {
+              title = `Clause ${index + 1}`
+              content = clause.trim()
+            }
+          }
+          
           return {
             title: title || `Clause ${index + 1}`,
-            content: content.join(':').trim() || "Contract clause content"
+            content: content || "Contract clause content"
           }
         })
 
@@ -234,7 +254,6 @@ export default function ContractGenerator() {
     setError(null)
 
     try {
-      // First try to download directly from the URL
       const response = await fetch(contractData.pdfUrl)
       
       if (!response.ok) {
@@ -253,8 +272,6 @@ export default function ContractGenerator() {
     } catch (error) {
       console.error('Error downloading PDF:', error)
       setError('Failed to download PDF. Please try again.')
-      
-      // Fallback to opening in new tab
       window.open(contractData.pdfUrl, '_blank')
     } finally {
       setIsDownloading(false)
@@ -269,24 +286,31 @@ export default function ContractGenerator() {
     setStep(1)
     setIsProcessing(false)
     setProgress(0)
+    setVisibleClauses(3)
     chunksRef.current = []
+  }
+
+  // Load more clauses
+  const loadMoreClauses = () => {
+    setVisibleClauses(prev => {
+      const remainingClauses = contractData.clauses.length - prev
+      const nextVisible = prev + Math.min(5, remainingClauses)
+      return nextVisible >= contractData.clauses.length ? contractData.clauses.length : nextVisible
+    })
   }
 
   // Clean up recording and object URLs
   useEffect(() => {
     return () => {
-      // Clean up media recorder
       if (mediaRecorderRef.current && isRecording) {
         mediaRecorderRef.current.stop()
       }
       
-      // Clean up audio element
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current.src = ''
       }
       
-      // Revoke object URLs
       if (audioBlob) {
         URL.revokeObjectURL(URL.createObjectURL(audioBlob))
       }
@@ -297,43 +321,41 @@ export default function ContractGenerator() {
   }, [isRecording, audioBlob, file])
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white pt-44 md:pt-44 px-4">
-
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white pt-44 md:pt-44 px-4">
       <ContractGeneratorHero />
 
-
       <div className="text-center mb-12 pt-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center px-4 py-2 rounded-full bg-blue-900/30 border border-blue-500/30 mb-6"
-          >
-            <FiFileText className="text-blue-400 mr-2" />
-            <span className="text-sm font-medium text-blue-200">AI Contract Generator</span>
-          </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center px-4 py-2 rounded-full bg-blue-900/30 border border-blue-500/30 mb-6"
+        >
+          <FiFileText className="text-blue-400 mr-2" />
+          <span className="text-sm font-medium text-blue-200">AI Contract Generator</span>
+        </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight"
-          >
-            <span className="block text-white">Upload Source</span>
-            <span className="bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent">
-              Start Your Contract
-            </span>
-          </motion.h1>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight"
+        >
+          <span className="block text-white">Upload Source</span>
+          <span className="bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent">
+            Start Your Contract
+          </span>
+        </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-md text-gray-300 max-w-2xl mx-auto"
-          >
-            Provide the basis for your contract by uploading a document or recording voice instructions.
-          </motion.p>
-        </div>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-md text-gray-300 max-w-2xl mx-auto"
+        >
+          Provide the basis for your contract by uploading a document or recording voice instructions.
+        </motion.p>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
@@ -377,7 +399,7 @@ export default function ContractGenerator() {
               {/* Drag & Drop Upload */}
               <div 
                 {...getRootProps()} 
-                className={`border-2 border-dashed rounded-xl p-6 md:p-8 text-center cursor-pointer transition-colors ${isDragActive ? 'border-indigo-500 bg-indigo-900/20' : 'border-gray-700 hover:border-gray-600'} ${file ? 'border-green-500 bg-green-900/10' : ''}`}
+                className={`border-2 border-dashed rounded-xl p-6 md:p-8 text-center cursor-pointer transition-all ${isDragActive ? 'border-indigo-500 bg-indigo-900/20' : 'border-gray-700 hover:border-gray-600'} ${file ? 'border-green-500 bg-green-900/10' : ''}`}
               >
                 <input {...getInputProps()} />
                 <div className="flex flex-col items-center justify-center space-y-3 md:space-y-4">
@@ -390,7 +412,7 @@ export default function ContractGenerator() {
                           e.stopPropagation()
                           setFile(null)
                         }}
-                        className="text-red-400 text-xs md:text-sm flex items-center"
+                        className="text-red-400 text-xs md:text-sm flex items-center hover:text-red-300 transition-colors"
                       >
                         <FiX className="mr-1" /> Remove file
                       </button>
@@ -410,10 +432,10 @@ export default function ContractGenerator() {
               </div>
 
               {/* Voice Recording */}
-              <div className="border-2 border-dashed border-gray-700 rounded-xl p-6 md:p-8 flex flex-col items-center justify-center">
+              <div className="border-2 border-dashed border-gray-700 rounded-xl p-6 md:p-8 flex flex-col items-center justify-center hover:border-gray-600 transition-colors">
                 <button
                   onClick={isRecording ? stopRecording : startRecording}
-                  className={`flex items-center justify-center w-16 h-16 md:w-24 md:h-24 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-indigo-600 hover:bg-indigo-700'} transition-colors mb-3 md:mb-4`}
+                  className={`flex items-center justify-center w-16 h-16 md:w-24 md:h-24 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-indigo-600 hover:bg-indigo-700'} transition-colors mb-3 md:mb-4 shadow-lg`}
                 >
                   <FiMic className="h-5 w-5 md:h-8 md:w-8" />
                 </button>
@@ -437,7 +459,7 @@ export default function ContractGenerator() {
             </div>
 
             {error && (
-              <div className="mt-3 md:mt-4 p-2 md:p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200 text-xs md:text-sm">
+              <div className="mt-3 md:mt-4 p-2 md:p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200 text-xs md:text-sm animate-pulse">
                 {error}
               </div>
             )}
@@ -446,7 +468,7 @@ export default function ContractGenerator() {
               <button
                 onClick={() => file ? setStep(2) : setError('Please upload a file or record voice instructions')}
                 disabled={!file}
-                className={`flex items-center px-4 py-2 md:px-6 md:py-3 rounded-md ${file ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-700 cursor-not-allowed'} transition-colors text-sm md:text-base`}
+                className={`flex items-center px-4 py-2 md:px-6 md:py-3 rounded-md ${file ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-700 cursor-not-allowed'} transition-colors text-sm md:text-base shadow-lg hover:shadow-indigo-500/20`}
               >
                 Continue <FiChevronRight className="ml-1 md:ml-2" />
               </button>
@@ -467,7 +489,7 @@ export default function ContractGenerator() {
               Confirm the details before we generate your contract.
             </p>
 
-            <div className="bg-gray-800 rounded-xl p-4 md:p-6 mb-4 md:mb-6">
+            <div className="bg-gray-800 rounded-xl p-4 md:p-6 mb-4 md:mb-6 shadow-lg">
               <h3 className="text-base md:text-lg font-medium mb-3 md:mb-4 flex items-center">
                 <FiUpload className="mr-2 text-indigo-400" />
                 Source File: {file.name}
@@ -495,14 +517,14 @@ export default function ContractGenerator() {
             <div className="flex justify-between mt-6 md:mt-8">
               <button
                 onClick={() => setStep(1)}
-                className="px-4 py-2 md:px-6 md:py-3 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors text-sm md:text-base"
+                className="px-4 py-2 md:px-6 md:py-3 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors text-sm md:text-base shadow-lg"
               >
                 Back
               </button>
               <button
                 onClick={processContract}
                 disabled={isProcessing}
-                className="flex items-center px-4 py-2 md:px-6 md:py-3 rounded-md bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 text-sm md:text-base"
+                className="flex items-center px-4 py-2 md:px-6 md:py-3 rounded-md bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 text-sm md:text-base shadow-lg hover:shadow-indigo-500/20"
               >
                 {isProcessing ? (
                   <>
@@ -520,7 +542,7 @@ export default function ContractGenerator() {
             {isProcessing && (
               <div className="mt-4 md:mt-6 w-full bg-gray-700 rounded-full h-2 md:h-2.5">
                 <div 
-                  className="bg-indigo-600 h-full rounded-full" 
+                  className="bg-indigo-600 h-full rounded-full transition-all duration-300" 
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
@@ -537,28 +559,30 @@ export default function ContractGenerator() {
             className="max-w-4xl mx-auto"
           >
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
-              <h2 className="text-2xl md:text-3xl font-bold">Your Generated Contract</h2>
+              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                Your Generated Contract
+              </h2>
               <button
                 onClick={resetProcess}
-                className="px-3 py-1.5 md:px-4 md:py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors text-xs md:text-sm"
+                className="px-3 py-1.5 md:px-4 md:py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors text-xs md:text-sm shadow-lg"
               >
                 Start New
               </button>
             </div>
 
-            <div className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 mb-6 md:mb-8">
+            <div className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 mb-6 md:mb-8 shadow-xl">
               {/* Contract Header */}
-              <div className="bg-gray-900 p-4 md:p-6 border-b border-gray-700">
+              <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-4 md:p-6 border-b border-gray-700">
                 <h3 className="text-xl md:text-2xl font-bold text-center mb-1 md:mb-2">{contractData.title}</h3>
                 <p className="text-gray-400 text-center text-sm md:text-base">Effective Date: {contractData.effectiveDate}</p>
               </div>
 
               {/* Contract Parties */}
               <div className="p-4 md:p-6 border-b border-gray-700">
-                <h4 className="text-base md:text-lg font-medium mb-3 md:mb-4">Parties:</h4>
+                <h4 className="text-base md:text-lg font-medium mb-3 md:mb-4 text-indigo-400">Parties:</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   {contractData.parties.map((party, index) => (
-                    <div key={index} className="bg-gray-900/50 p-3 md:p-4 rounded-lg">
+                    <div key={index} className="bg-gray-900/50 p-3 md:p-4 rounded-lg border border-gray-700 hover:border-indigo-500 transition-colors">
                       <p className="font-medium text-sm md:text-base">{party}</p>
                       <p className="text-xs md:text-sm text-gray-400">Party {index + 1}</p>
                     </div>
@@ -568,30 +592,54 @@ export default function ContractGenerator() {
 
               {/* Contract Clauses */}
               <div className="p-4 md:p-6">
-                <h4 className="text-base md:text-lg font-medium mb-3 md:mb-4">Clauses:</h4>
+                <h4 className="text-base md:text-lg font-medium mb-3 md:mb-4 text-indigo-400">Clauses:</h4>
                 <div className="space-y-4 md:space-y-6">
-                  {contractData.clauses.map((clause, index) => (
-                    <div key={index} className="bg-gray-900/50 p-3 md:p-4 rounded-lg">
-                      <h5 className="font-medium text-indigo-400 mb-1 md:mb-2 text-sm md:text-base">{clause.title}</h5>
-                      <p className="text-gray-300 text-xs md:text-sm">{clause.content}</p>
-                    </div>
+                  {contractData.clauses.slice(0, visibleClauses).map((clause, index) => (
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="bg-gray-900/50 p-3 md:p-4 rounded-lg border border-gray-700 hover:border-indigo-500 transition-colors shadow-md"
+                    >
+                      <h5 className="font-medium text-indigo-400 mb-1 md:mb-2 text-sm md:text-base flex items-center">
+                        <span className="bg-indigo-600/20 px-2 py-1 rounded-md mr-2">
+                          {clause.title}
+                        </span>
+                      </h5>
+                      <p className="text-gray-300 text-xs md:text-sm whitespace-pre-wrap">
+                        {clause.content}
+                      </p>
+                    </motion.div>
                   ))}
                 </div>
+
+                {visibleClauses < contractData.clauses.length && (
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      onClick={loadMoreClauses}
+                      className="flex items-center px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
+                    >
+                      <FiChevronDown className="mr-2" />
+                      Load More Clauses ({contractData.clauses.length - visibleClauses} remaining)
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
               <button 
                 onClick={downloadPDF}
                 disabled={!contractData.pdfUrl || isDownloading}
-                className="p-3 md:p-4 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors disabled:opacity-50"
+                className="p-3 md:p-4 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors disabled:opacity-50 group shadow-lg"
               >
                 <div className="flex flex-col items-center">
                   {isDownloading ? (
                     <FiLoader className="h-5 w-5 md:h-6 md:w-6 mb-1 md:mb-2 text-indigo-400 animate-spin" />
                   ) : (
-                    <FiDownload className="h-5 w-5 md:h-6 md:w-6 mb-1 md:mb-2 text-indigo-400" />
+                    <FiDownload className="h-5 w-5 md:h-6 md:w-6 mb-1 md:mb-2 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
                   )}
                   <span className="text-xs md:text-sm">Download PDF</span>
                   {!contractData.pdfUrl && (
@@ -599,13 +647,13 @@ export default function ContractGenerator() {
                   )}
                 </div>
               </button>
-              <button className="p-3 md:p-4 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors">
+              <button className="p-3 md:p-4 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors group shadow-lg">
                 <div className="flex flex-col items-center">
-                  <FiEdit className="h-5 w-5 md:h-6 md:w-6 mb-1 md:mb-2 text-amber-400" />
+                  <FiEdit className="h-5 w-5 md:h-6 md:w-6 mb-1 md:mb-2 text-amber-400 group-hover:text-amber-300 transition-colors" />
                   <span className="text-xs md:text-sm">Edit Terms</span>
                 </div>
               </button>
-              <button className="p-3 md:p-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+              <button className="p-3 md:p-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors group shadow-lg hover:shadow-indigo-500/20">
                 <div className="flex flex-col items-center">
                   <FiSend className="h-5 w-5 md:h-6 md:w-6 mb-1 md:mb-2 text-white" />
                   <span className="text-xs md:text-sm">Send for Signature</span>
