@@ -6,7 +6,6 @@ import { FaRobot, FaHandshake, FaRegLightbulb } from 'react-icons/fa';
 import { RiShieldCheckLine, RiTranslate } from 'react-icons/ri';
 import { BsHourglassSplit, BsFileEarmarkText } from 'react-icons/bs';
 import { useRef } from 'react';
-import Link from 'next/link';
 import ChatHero from '@/components/chat/ChatHero';
 import ChatFeature from '@/components/chat/ChatFeature';
 import ChatHowItWorks from '@/components/chat/ChatHowItWorks';

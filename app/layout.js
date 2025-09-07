@@ -1,6 +1,8 @@
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import { ApiProvider } from "@/context/ApiContext";
+import DemoNotification from "@/components/Notification";
 
 export const metadata = {
   title: "Gaprio",
@@ -11,9 +13,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <Navbar />
-        {children}
-        <Footer />
+        <ApiProvider>
+          <Navbar />
+          {children}
+          <Footer />
+          <DemoNotification />
+        </ApiProvider>
       </body>
     </html>
   );

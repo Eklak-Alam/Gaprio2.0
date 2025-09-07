@@ -61,11 +61,11 @@ export default function ChatCTA() {
           <motion.a
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            href="/signup"
+            href="/chat/start-chat"
             className="relative group bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
           >
             <span className="relative z-10 flex items-center">
-              Start Free Trial <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              Start Chat <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
             </span>
             <div className="absolute inset-0 rounded-xl border-2 border-white/20 group-hover:border-white/40 transition-all duration-300 pointer-events-none" />
           </motion.a>
@@ -73,11 +73,11 @@ export default function ChatCTA() {
           <motion.a
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            href="/demo"
+            href="/chat/register"
             className="relative group bg-transparent hover:bg-gray-800/50 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center border-2 border-gray-700 hover:border-gray-600"
           >
             <span className="relative z-10 flex items-center">
-              Live Demo <FaRegHandPointer className="ml-2 group-hover:animate-bounce" />
+              Create Account <FaRegHandPointer className="ml-2 group-hover:animate-bounce" />
             </span>
             <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/10 transition-all duration-300 pointer-events-none" />
           </motion.a>
