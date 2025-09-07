@@ -1,14 +1,27 @@
 'use client'
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { FiGithub, FiLinkedin, FiTwitter, FiMail } from 'react-icons/fi'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Image from 'next/image'
 
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger)
+}
+
 export default function TeamLeadership() {
+  const sectionRef = useRef(null)
+  const headingRef = useRef(null)
+  const cardsRef = useRef([])
+  const ethosRef = useRef(null)
+
   const teamMembers = [
     {
       name: "Abhijeet Singh",
       role: "Chief Technology Officer",
-      image: "https://media.licdn.com/dms/image/v2/D5603AQE92E1XKWkxDw/profile-displayphoto-scale_400_400/B56ZfomSJ7GQAo-/0/1751954042212?e=1758153600&v=beta&t=be8uraHQff29-2pkun081MdjLca67E08hkUbYeMOJ1o", // Replace with actual image paths
+      image: "https://media.licdn.com/dms/image/v2/D5603AQE92E1XKWkxDw/profile-displayphoto-scale_400_400/B56ZfomSJ7GQAo-/0/1751954042212?e=1758153600&v=beta&t=be8uraHQff29-2pkun081MdjLca67E08hkUbYeMOJ1o",
       social: [
         { icon: <FiLinkedin />, url: "#" },
         { icon: <FiTwitter />, url: "#" },
@@ -41,36 +54,147 @@ export default function TeamLeadership() {
     }
   ]
 
+  useEffect(() => {
+    // Initialize Lenis for smooth scrolling
+    const initSmoothScrolling = async () => {
+      const Lenis = (await import('lenis')).default
+      
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        smoothWheel: true,
+      })
+
+      function raf(time) {
+        lenis.raf(time)
+        requestAnimationFrame(raf)
+      }
+
+      requestAnimationFrame(raf)
+
+      // Connect Lenis with GSAP ScrollTrigger
+      lenis.on('scroll', ScrollTrigger.update)
+
+      gsap.ticker.add((time) => {
+        lenis.raf(time * 1000)
+      })
+
+      gsap.ticker.lagSmoothing(0)
+    }
+
+    initSmoothScrolling()
+
+    // GSAP animations
+    const ctx = gsap.context(() => {
+      // Heading animation
+      gsap.fromTo(headingRef.current, 
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headingRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Card animations
+      cardsRef.current.forEach((card, index) => {
+        if (!card) return
+        
+        gsap.fromTo(card, 
+          { y: 80, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            delay: index * 0.2,
+            ease: "back.out(1.2)",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 85%",
+              toggleActions: "play none none reverse"
+            }
+          }
+        )
+
+        // Hover animations for cards
+        card.addEventListener('mouseenter', () => {
+          gsap.to(card, {
+            y: -10,
+            duration: 0.4,
+            ease: "power2.out"
+          })
+        })
+
+        card.addEventListener('mouseleave', () => {
+          gsap.to(card, {
+            y: 0,
+            duration: 0.4,
+            ease: "power2.out"
+          })
+        })
+      })
+
+      // Ethos section animation
+      gsap.fromTo(ethosRef.current, 
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ethosRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Background particles animation
+      const particles = document.querySelectorAll('.particle')
+      particles.forEach(particle => {
+        gsap.to(particle, {
+          y: -20,
+          duration: gsap.utils.random(3, 6),
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut"
+        })
+      })
+
+    }, sectionRef)
+
+    return () => ctx.revert()
+  }, [])
+
   return (
-    <section className="relative py-24 overflow-hidden">
+    <section ref={sectionRef} className="relative py-24 overflow-hidden">
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+        <div ref={headingRef} className="text-center mb-16 opacity-0">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Team</span> Leadership
           </h2>
           <p className="text-lg text-gray-400 max-w-3xl mx-auto">
             The brilliant minds powering Gaprio's vision
           </p>
-        </motion.div>
+        </div>
 
         {/* Team grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {teamMembers.map((member, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.15, duration: 0.5 }}
-              viewport={{ once: true }}
-              className="relative group"
+              ref={el => cardsRef.current[index] = el}
+              className="relative group opacity-0"
             >
               {/* Electric border effect */}
               <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${member.borderColor} opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-500`}></div>
@@ -104,7 +228,7 @@ export default function TeamLeadership() {
                     {member.role}
                   </p>
                   <p className="text-gray-400 text-sm mb-6">
-                    {index === 2 ? ( // Special bio for you
+                    {index === 2 ? (
                       "Full-stack architect bridging AI with human-centered design"
                     ) : (
                       "Visionary leader driving innovation and growth"
@@ -144,18 +268,12 @@ export default function TeamLeadership() {
                   </>
                 )}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Team ethos */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          viewport={{ once: true }}
-          className="mt-20 bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-gray-800 rounded-2xl p-8"
-        >
+        <div ref={ethosRef} className="mt-20 bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-gray-800 rounded-2xl p-8 opacity-0">
           <h3 className="text-2xl font-bold text-white mb-6">Our Leadership Ethos</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-start gap-4">
@@ -186,7 +304,7 @@ export default function TeamLeadership() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

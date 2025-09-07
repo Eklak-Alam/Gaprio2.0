@@ -130,23 +130,6 @@ export default function PremiumNavbar() {
                     </motion.span>
                     {item.name}
                   </motion.div>
-                  {pathname === item.href && (
-                    <motion.span 
-                      className="absolute left-1/2 bottom-0 h-[2px] w-[70%] bg-gradient-to-r from-indigo-400 to-purple-500 -translate-x-1/2"
-                      layoutId="active-nav-item"
-                      transition={{ 
-                        type: 'spring', 
-                        stiffness: 500,
-                        damping: 30
-                      }}
-                    />
-                  )}
-                  {pathname !== item.href && (
-                    <motion.span 
-                      className="absolute left-1/2 bottom-0 h-[1px] w-0 group-hover:w-[70%] bg-gradient-to-r from-indigo-400/30 to-purple-500/30 -translate-x-1/2"
-                      transition={{ duration: 0.3 }}
-                    />
-                  )}
                 </Link>
               ))}
             </nav>
@@ -257,13 +240,6 @@ export default function PremiumNavbar() {
                           {item.icon}
                         </motion.span>
                         <span>{item.name}</span>
-                        {pathname === item.href && (
-                          <motion.span 
-                            className="ml-auto h-2 w-2 rounded-full bg-purple-500"
-                            animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ repeat: Infinity, duration: 1.5 }}
-                          />
-                        )}
                       </motion.div>
                     </Link>
                   </motion.div>
