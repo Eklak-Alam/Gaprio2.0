@@ -4,6 +4,7 @@ import axios from 'axios';
 
 const ApiContext = createContext(null);
 
+
 export const useApi = () => {
   const ctx = useContext(ApiContext);
   if (!ctx) throw new Error('useApi must be used within ApiProvider');
@@ -33,14 +34,12 @@ export const ApiProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
   // Init from LS
   useEffect(() => {
-    const t = getLS('gaprio_token');
-    const u = getLS('gaprio_user');
-    if (t) setToken(t);
-    if (u) setUser(u);
+    setToken(getLS('gaprio_token'));
+    setUser(getLS('gaprio_user'));
   }, []);
 
   // Keep axios headers in sync with token
@@ -60,7 +59,7 @@ export const ApiProvider = ({ children }) => {
   }, [user]);
 
   // ===== Core API helper =====
-  const apiRequest = async (method, url, data = null) => {
+  const apiRequest = async (method, url, data = null, params = null) => {
     setLoading(true);
     setError(null);
     try {
@@ -68,6 +67,7 @@ export const ApiProvider = ({ children }) => {
         method,
         url: `${API_BASE}${url}`,
         data,
+        params, // ✅ FIXED: pass query params properly
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       });
       return res.data;
@@ -94,8 +94,8 @@ export const ApiProvider = ({ children }) => {
 
   const login = async (creds) => {
     const res = await apiRequest('post', '/auth/login', creds);
-
     const { token: authToken, userId, username, role, expiresAt } = res;
+
     if (!authToken) throw new Error('No token from server');
 
     setToken(authToken);
@@ -115,8 +115,22 @@ export const ApiProvider = ({ children }) => {
   // ===== USERS =====
   const getUserById = (id) => apiRequest('get', `/users/${id}`);
   const getUserByUsername = (uname) => apiRequest('get', `/users/username/${uname}`);
-  const searchUsers = (q, limit = 20) =>
-    apiRequest('get', `/users/search?q=${encodeURIComponent(q)}&limit=${limit}`);
+
+  // ✅ FIXED SEARCH
+  const searchUsers = async (q, limit = 20) => {
+    if (!q || q.trim().length < 2) return [];
+    try {
+      console.log('🔍 Searching users with query:', q);
+      const response = await apiRequest('get', `/users/search`, null, { q, limit });
+      console.log('✅ Search results:', response);
+      return response;
+    } catch (error) {
+      console.error('❌ Search error:', error);
+      setError('Failed to search users');
+      return [];
+    }
+  };
+
   const updateUserProfile = (id, data) => apiRequest('patch', `/users/${id}`, data);
 
   // ===== CONVERSATIONS =====

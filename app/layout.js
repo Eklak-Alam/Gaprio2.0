@@ -59,7 +59,7 @@ export default function RootLayout({ children }) {
             <Navbar />
             {children}
             <Footer />
-            <DemoNotification />
+            {/* <DemoNotification /> */}
           </SmoothScroll>
         </ApiProvider>
       </body>
