@@ -1,17 +1,45 @@
 'use client';
 import ChatSection from '@/components/chat/dashboard/ChatSection';
+import CreateGroupSection from '@/components/chat/dashboard/CreateGroupSection';
+import GroupChatSection from '@/components/chat/dashboard/GroupChatSection';
+import GroupListSection from '@/components/chat/dashboard/GroupListSection';
 import ProfileSection from '@/components/chat/dashboard/ProfileSection';
 import SearchSection from '@/components/chat/dashboard/SearchSection';
 import SecuritySection from '@/components/chat/dashboard/SecuritySection';
 import Sidebar from '@/components/chat/dashboard/Sidebar';
 import { useApi } from '@/context/ApiContext';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function Dashboard() {
-  const { isAuthenticated, user: currentUser } = useApi();
+  const { isAuthenticated, user: currentUser, getUserGroups } = useApi();
   const [activeSection, setActiveSection] = useState('chat');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [error, setError] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [userGroups, setUserGroups] = useState([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+
+  // Fetch user's groups
+  const fetchUserGroups = async () => {
+    if (!currentUser) return;
+    
+    setLoadingGroups(true);
+    try {
+      const groups = await getUserGroups(currentUser.id);
+      setUserGroups(groups);
+    } catch (error) {
+      console.error('Failed to fetch groups:', error);
+      setError('Failed to load your groups');
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchUserGroups();
+    }
+  }, [currentUser]);
 
   if (!isAuthenticated()) {
     return (
@@ -37,7 +65,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
-      {/* Fixed Navbar already above this, so we use mt-[96px] instead of pt */}
       <div className="flex flex-1 mt-24"> 
         <Sidebar
           currentUser={currentUser}
@@ -45,6 +72,10 @@ export default function Dashboard() {
           setActiveSection={setActiveSection}
           mobileSidebarOpen={mobileSidebarOpen}
           setMobileSidebarOpen={setMobileSidebarOpen}
+          selectedGroup={selectedGroup}
+          setSelectedGroup={setSelectedGroup}
+          userGroups={userGroups}
+          refreshGroups={fetchUserGroups}
         />
 
         <main className="flex-1 h-full overflow-y-auto px-4 lg:px-6">
@@ -57,8 +88,44 @@ export default function Dashboard() {
             </div>
           )}
 
-          {activeSection === 'chat' && <ChatSection setError={setError} />}
+          {activeSection === 'chat' && (
+            selectedGroup ? (
+              <GroupChatSection
+                group={selectedGroup} 
+                currentUser={currentUser}
+                setError={setError}
+                onLeaveGroup={() => {
+                  setSelectedGroup(null);
+                  fetchUserGroups();
+                }}
+              />
+            ) : (
+              <ChatSection setError={setError} />
+            )
+          )}
+          
           {activeSection === 'search' && <SearchSection setError={setError} />}
+          {activeSection === 'groups' && (
+            <GroupListSection
+              groups={userGroups}
+              loading={loadingGroups}
+              onSelectGroup={setSelectedGroup}
+              onCreateGroup={() => setActiveSection('create-group')}
+              onRefresh={fetchUserGroups}
+              setError={setError}
+            />
+          )}
+          {activeSection === 'create-group' && (
+            <CreateGroupSection
+              currentUser={currentUser}
+              onGroupCreated={() => {
+                setActiveSection('groups');
+                fetchUserGroups();
+              }}
+              onCancel={() => setActiveSection('groups')}
+              setError={setError}
+            />
+          )}
           {activeSection === 'profile' && <ProfileSection currentUser={currentUser} />}
           {activeSection === 'security' && <SecuritySection />}
         </main>
