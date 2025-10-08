@@ -21,7 +21,7 @@ export default function TeamLeadership() {
     {
       name: "Abhijeet Singh",
       role: "Chief Technology Officer",
-      image: "https://media.licdn.com/dms/image/v2/D5603AQE92E1XKWkxDw/profile-displayphoto-scale_400_400/B56ZfomSJ7GQAo-/0/1751954042212?e=1758153600&v=beta&t=be8uraHQff29-2pkun081MdjLca67E08hkUbYeMOJ1o",
+      image: "/team/preet.jpg",
       social: [
         { icon: <FiLinkedin />, url: "#" },
         { icon: <FiTwitter />, url: "#" },
@@ -32,7 +32,7 @@ export default function TeamLeadership() {
     {
       name: "Hanu Shashwat",
       role: "Chief Executive Officer",
-      image: "https://media.licdn.com/dms/image/v2/D4D03AQEoa6tbC-LEUA/profile-displayphoto-shrink_400_400/B4DZaiDIkjHwAg-/0/1746475453430?e=1758153600&v=beta&t=18N8_ziFmUP7rpYakdCx20UTHrowosoKwMIqjB8NV1k",
+      image: "/team/hanu.jpg",
       social: [
         { icon: <FiGithub />, url: "#" },
         { icon: <FiLinkedin />, url: "#" },

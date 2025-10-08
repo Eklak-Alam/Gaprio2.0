@@ -3,279 +3,274 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { FiMenu, FiX, FiArrowRight, FiMessageSquare } from 'react-icons/fi'
-import { RiChatSmileLine } from 'react-icons/ri'
+import { FiMenu, FiX, FiArrowRight, FiMessageSquare, FiHome, FiInfo, FiSettings } from 'react-icons/fi'
 import { BsFileEarmarkText } from 'react-icons/bs'
 import { usePathname } from 'next/navigation'
 
 export default function PremiumNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [lastScrollY, setLastScrollY] = useState(0)
   const [visible, setVisible] = useState(true)
   const pathname = usePathname()
 
   const navItems = [
-    { name: "Home", href: "/", icon: <RiChatSmileLine className="text-lg" /> },
-    { name: "About", href: "/about", icon: <RiChatSmileLine className="text-lg" /> },
-    { name: "Services", href: "/services", icon: <RiChatSmileLine className="text-lg" /> },
+    { name: "Home", href: "/", icon: <FiHome className="text-lg" /> },
+    { name: "About", href: "/about", icon: <FiInfo className="text-lg" /> },
+    { name: "Services", href: "/services", icon: <FiSettings className="text-lg" /> },
     { name: "Contract Generator", href: "/contract-generator", icon: <BsFileEarmarkText className="text-lg" /> },
     { name: "Chat", href: "/chat", icon: <FiMessageSquare className="text-lg" /> },
   ]
 
-  // Enhanced scroll handling
+  // Simple scroll handling
   useEffect(() => {
-    const handleScroll = () => {
+    let lastScrollY = window.scrollY
+    let ticking = false
+
+    const updateNavbar = () => {
       const currentScrollY = window.scrollY
-      
-      // Show/hide navbar logic
-      if (currentScrollY < 100) {
-        setVisible(true)
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        
+      // Show/hide based on scroll direction
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
         setVisible(false)
-      } else if (currentScrollY < lastScrollY - 10) {
+      } else {
         setVisible(true)
       }
       
-      // Scrolled state for styling
-      setIsScrolled(currentScrollY > 30)
-      setLastScrollY(currentScrollY)
-      
-      // Close mobile menu when scrolling down
-      if (mobileMenuOpen && currentScrollY > lastScrollY && currentScrollY > 100) {
-        setMobileMenuOpen(false)
+      // Background change
+      setIsScrolled(currentScrollY > 10)
+      lastScrollY = currentScrollY
+      ticking = false
+    }
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateNavbar)
+        ticking = true
       }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [lastScrollY, mobileMenuOpen])
+  }, [])
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
 
-  const primaryGradient = 'bg-gradient-to-r from-indigo-500 to-purple-600'
-  const primaryHover = 'hover:from-indigo-600 hover:to-purple-700'
-  const textGradient = `bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent`
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [mobileMenuOpen])
+
+  const primaryGradient = 'bg-gradient-to-r from-blue-500 to-purple-500'
+  const primaryHover = 'hover:from-blue-600 hover:to-purple-600'
+  const textGradient = `bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent`
 
   return (
     <>
-      {/* Main Navbar */}
-      <motion.header
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ 
-          y: visible ? 0 : -100,
-          opacity: visible ? 1 : 0
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 400,
-          damping: 30,
-          opacity: { duration: 0.2 }
-        }}
-        className={`fixed w-[94%] max-w-7xl left-1/2 -translate-x-1/2 z-50 mt-4
-                    ${isScrolled ? 'bg-gray-900/95 backdrop-blur-lg' : 'bg-gray-900/90 backdrop-blur-md'} 
-                    border border-gray-700/50 rounded-xl shadow-xl transition-all duration-300`}
+      {/* Main Navbar - Clean Design */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out
+          ${visible ? 'translate-y-0' : '-translate-y-full'}
+          ${isScrolled 
+            ? 'bg-gray-900 backdrop-blur-md shadow-sm' 
+            : 'bg-gray-900 backdrop-blur-sm'
+          }`}
       >
-        <div className="px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo with enhanced animation */}
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-shrink-0"
-            >
-              <Link href="/" className="flex items-center gap-2 focus-visible:outline-none">
-                <motion.div 
-                  className="h-8 w-8 rounded-lg overflow-hidden relative"
-                  whileHover={{ rotate: 5 }}
-                >
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between h-16 lg:h-18 px-4 sm:px-6 lg:px-8">
+            {/* Logo - Clean without background */}
+            <div className="flex-shrink-0">
+              <Link href="/" className="flex items-center gap-3 focus-visible:outline-none">
+                <div className="h-9 w-9 rounded-lg overflow-hidden relative">
                   <Image 
                     src="/logo.png" 
                     alt="Gaprio Logo" 
-                    width={32} 
-                    height={32} 
+                    width={36} 
+                    height={36} 
                     className="object-contain"
                     priority
                   />
-                </motion.div>
-                <motion.span 
-                  className={`text-xl font-bold ${textGradient}`}
-                  whileHover={{ scale: 1.05 }}
-                >
+                </div>
+                <span className={`text-xl font-bold ${textGradient}`}>
                   Gaprio
-                </motion.span>
+                </span>
               </Link>
-            </motion.div>
+            </div>
 
-            {/* Desktop Navigation with enhanced interactions */}
-            <nav className="hidden md:flex items-center space-x-1">
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-6">
               {navItems.map((item) => (
                 <Link 
                   key={item.href} 
                   href={item.href}
-                  className="relative group px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors focus-visible:outline-none"
+                  className={`relative px-3 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none rounded-lg group
+                    ${pathname === item.href 
+                      ? 'text-blue-600 font-semibold' 
+                      : 'text-gray-400 hover:text-blue-600'
+                    }`}
                 >
-                  <motion.div
-                    whileHover={{ 
-                      scale: 1.05,
-                      color: "#ffffff"
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <motion.span whileHover={{ scale: 1.2 }}>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-base transition-colors ${
+                      pathname === item.href ? 'text-blue-500' : 'text-gray-500 group-hover:text-blue-500'
+                    }`}>
                       {item.icon}
-                    </motion.span>
-                    {item.name}
-                  </motion.div>
+                    </span>
+                    <span>{item.name}</span>
+                  </div>
+                  
+                  {/* Active indicator */}
+                  {pathname === item.href && (
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 bg-blue-500 rounded-full" />
+                  )}
                 </Link>
               ))}
             </nav>
 
-            {/* Enhanced CTA Button */}
-            <div className="hidden md:block">
+            {/* Tablet Navigation */}
+            <nav className="hidden md:flex lg:hidden items-center space-x-3">
+              {navItems.map((item) => (
+                <Link 
+                  key={item.href} 
+                  href={item.href}
+                  className={`relative p-2.5 transition-all duration-200 focus-visible:outline-none rounded-lg
+                    ${pathname === item.href 
+                      ? 'text-blue-600 bg-blue-50' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                    }`}
+                  title={item.name}
+                >
+                  <div className={`text-lg transition-colors ${
+                    pathname === item.href ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500'
+                  }`}>
+                    {item.icon}
+                  </div>
+                </Link>
+              ))}
+            </nav>
+
+            {/* CTA Button */}
+            <div className="hidden md:flex items-center">
               <Link href="/get-started" className="focus-visible:outline-none">
-                <motion.button
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: "0 5px 15px -3px rgba(139, 92, 246, 0.4)"
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg text-white ${primaryGradient} ${primaryHover} shadow-lg transition-all flex items-center gap-2`}
+                <button
+                  className={`px-5 py-2.5 text-sm font-semibold rounded-lg text-white ${primaryGradient} ${primaryHover} shadow-md transition-all flex items-center gap-2 hover:shadow-lg hover:scale-105`}
                 >
                   <span>Get Started</span>
-                  <motion.span
-                    animate={{ x: [0, 2, 0] }}
-                    transition={{ 
-                      repeat: Infinity,
-                      duration: 1.5
-                    }}
-                  >
-                    <FiArrowRight />
-                  </motion.span>
-                </motion.button>
+                  <FiArrowRight className="text-base" />
+                </button>
               </Link>
             </div>
 
-            {/* Enhanced Mobile Menu Button */}
-            <motion.button
+            {/* Mobile Menu Button */}
+            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all focus-visible:outline-none"
+              className="md:hidden p-2.5 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 focus-visible:outline-none"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
-                <FiX className="h-6 w-6" />
+                <FiX className="h-5 w-5" />
               ) : (
-                <motion.div
-                  animate={{ rotate: [0, 5, 0] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                >
-                  <FiMenu className="h-6 w-6" />
-                </motion.div>
+                <FiMenu className="h-5 w-5" />
               )}
-            </motion.button>
+            </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* Premium Mobile Menu */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            {/* Enhanced Backdrop */}
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-lg z-40"
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
               onClick={() => setMobileMenuOpen(false)}
             />
 
-            {/* Enhanced Mobile Menu Content */}
+            {/* Mobile Menu Content */}
             <motion.div
-              key="mobile-menu"
-              initial={{ y: -50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -50, opacity: 0 }}
-              transition={{ 
-                type: 'spring',
-                stiffness: 400,
-                damping: 30
-              }}
-              className="fixed top-24 left-1/2 -translate-x-1/2 w-[94%] max-w-md bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="fixed top-0 right-0 bottom-0 w-full max-w-xs bg-gray-900 backdrop-blur-xl border-l border-gray-800 shadow-xl z-50 overflow-y-auto"
             >
-              <div className="px-2 py-4 space-y-1">
-                {navItems.map((item, index) => (
-                  <motion.div
+              {/* Header Section */}
+              <div className="flex items-center justify-between py-3.5 px-5 border-b border-gray-800 bg-gray-900">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg overflow-hidden">
+                    <Image 
+                      src="/logo.png" 
+                      alt="Gaprio Logo" 
+                      width={32} 
+                      height={32} 
+                      className="object-contain"
+                    />
+                  </div>
+                  <span className={`text-lg font-bold ${textGradient}`}>
+                    Gaprio
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                >
+                  <FiX className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Navigation Items */}
+              <div className="p-5 space-y-1">
+                {navItems.map((item) => (
+                  <Link 
                     key={item.href}
-                    initial={{ x: -30, opacity: 0 }}
-                    animate={{ 
-                      x: 0, 
-                      opacity: 1,
-                      transition: { 
-                        delay: index * 0.05,
-                        type: 'spring',
-                        stiffness: 500
-                      }
-                    }}
-                  >
-                    <Link 
-                      href={item.href}
-                      className={`block px-4 py-3 mx-2 rounded-lg text-base font-medium transition-all focus-visible:outline-none ${
-                        pathname === item.href 
-                          ? 'text-white bg-gradient-to-r from-indigo-500/20 to-purple-600/20' 
-                          : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                    href={item.href}
+                    className={`flex items-center gap-3 p-3 rounded-xl text-base font-medium transition-all duration-200 focus-visible:outline-none
+                      ${pathname === item.href 
+                        ? 'text-blue-600 bg-blue-50 border border-blue-200' 
+                        : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50 border border-transparent'
                       }`}
-                    >
-                      <motion.div 
-                        whileHover={{ x: 5 }}
-                        className="flex items-center gap-3"
-                      >
-                        <motion.span whileTap={{ scale: 0.9 }}>
-                          {item.icon}
-                        </motion.span>
-                        <span>{item.name}</span>
-                      </motion.div>
-                    </Link>
-                  </motion.div>
+                  >
+                    <span className={`flex-shrink-0 text-lg ${
+                      pathname === item.href ? 'text-blue-500' : 'text-gray-500'
+                    }`}>
+                      {item.icon}
+                    </span>
+                    <span className="flex-1">{item.name}</span>
+                    <FiArrowRight className={`text-sm transition-transform duration-200 ${
+                      pathname === item.href ? 'text-blue-400' : 'text-gray-400'
+                    }`} />
+                  </Link>
                 ))}
 
-                {/* Enhanced Mobile CTA Button */}
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ 
-                    y: 0, 
-                    opacity: 1,
-                    transition: { delay: navItems.length * 0.05 + 0.1 }
-                  }}
-                  className="pt-2 px-2"
-                >
+                {/* Mobile CTA Button */}
+                <div className="pt-4">
                   <Link href="/get-started" className="focus-visible:outline-none">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`w-full px-4 py-3 text-sm font-medium rounded-lg text-white ${primaryGradient} ${primaryHover} shadow-lg transition-all flex items-center justify-center gap-2`}
+                    <button
+                      className={`w-full px-4 py-3 text-base font-semibold rounded-lg text-white ${primaryGradient} ${primaryHover} shadow-md transition-all flex items-center justify-center gap-2 hover:shadow-lg`}
                     >
                       <span>Get Started</span>
-                      <motion.span
-                        animate={{ x: [0, 3, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        <FiArrowRight />
-                      </motion.span>
-                    </motion.button>
+                      <FiArrowRight className="text-sm" />
+                    </button>
                   </Link>
-                </motion.div>
+                </div>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
+
+      {/* Add padding to prevent content from being hidden behind navbar */}
+      <div className="h-16 lg:h-18" />
     </>
   )
 }
